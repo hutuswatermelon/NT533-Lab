@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OpenStack Control Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">
+            <h2>☁️ OpenStack</h2>
+        </div>
+
+        <div class="nav-section">
+            <button class="nav-toggle active" data-view="instances-view">Instances</button>
+            <div class="nav-panel active" data-panel="instances-view">
+                <div class="panel-group">
+                    <h3>Instances</h3>
+                    <button type="button" class="btn-sidebar blue" id="open-create-modal">Create Instance</button>
+                    <a href="/scale_up" class="btn-sidebar">Scale Up</a>
+                    <a href="/scale_down" class="btn-sidebar">Scale Down</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <button class="nav-toggle" data-view="networks-view">Networks</button>
+            <div class="nav-panel" data-panel="networks-view">
+                <div class="panel-group">
+                    <h3>Network</h3>
+                    <a href="/init" class="btn-sidebar">Initialize Network</a>
+                </div>
+                <!-- Load Balancer section tạm thời vô hiệu hóa -->
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header>
+            <h1>OpenStack Network Management</h1>
+            <p>Manage network resources and instances through the API.</p>
+        </header>
+
+        <section class="content-view active" id="instances-view">
+            <h2>Instances</h2>
+            <table class="instances-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>Fixed IP</th>
+                        <th>Floating IP</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in servers %}
+                    <tr>
+                        <td>{{ s.name }}</td>
+                        <td><span class="status {{ s.display_status|lower|replace(' ', '-') }}">{{ s.display_status }}</span></td>
+                        <td>{{ s.fixed_ip or 'N/A' }}</td>
+                        <td>{{ s.floating_ip or 'N/A' }}</td>
+                        <td class="actions-cell">
+                            {% if s.status == 'ACTIVE' %}
+                            <button type="button" class="btn-action warning" data-power="stop" data-id="{{ s.id }}" data-name="{{ s.name }}">Shutdown</button>
+                            {% elif s.status == 'SHUTOFF' %}
+                            <button type="button" class="btn-action" data-power="start" data-id="{{ s.id }}" data-name="{{ s.name }}">Start</button>
+                            {% else %}
+                            <span class="no-action">—</span>
+                            {% endif %}
+                            <button type="button" class="btn-delete" data-delete="{{ s.id }}" data-name="{{ s.name }}">Delete</button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="no-vm">No instances have been created yet</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <section class="content-view" id="networks-view">
+            <div class="grid">
+                <div class="card">
+                    <h2>Network Status</h2>
+                    <ul class="meta-list">
+                        <li><span>Network:</span> {{ network.name if network else 'Not created' }}</li>
+                        <li><span>Subnet:</span> {{ subnet.cidr if subnet else 'Not created' }}</li>
+                        <li><span>Router:</span> {{ router.name if router else 'Not created' }}</li>
+                        <li><span>External Network:</span> {{ ext_net }}</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h2>Load Balancer</h2>
+                    <p>The load balancer feature is under maintenance.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="modal" id="create-modal">
+        <div class="modal-content">
+            <h2>Create New Instance</h2>
+            <form id="create-form" action="/create_vm" method="post">
+                <label for="modal-vm-name">Instance Name</label>
+                <input type="text" id="modal-vm-name" name="name" placeholder="New instance name" required>
+                <label for="modal-user-data">Customization Script</label>
+                <textarea id="modal-user-data" name="user_data" rows="10">{{ default_user_data }}</textarea>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancel-create">Cancel</button>
+                    <button type="submit" class="btn-primary">Confirm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="delete-modal">
+        <div class="modal-content modal-small">
+            <h2>Delete Instance</h2>
+            <p>Are you sure you want to delete instance <strong id="delete-vm-name"></strong>?</p>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" id="cancel-delete">Cancel</button>
+                <button type="button" class="btn-delete" id="confirm-delete">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const toggles = document.querySelectorAll('.nav-toggle');
+        const panels = document.querySelectorAll('.nav-panel');
+        const views = document.querySelectorAll('.content-view');
+        const tableBody = document.querySelector('#instances-view tbody');
+
+        const createModal = document.getElementById('create-modal');
+        const openCreateBtn = document.getElementById('open-create-modal');
+        const cancelCreateBtn = document.getElementById('cancel-create');
+        const createForm = document.getElementById('create-form');
+
+        const deleteModal = document.getElementById('delete-modal');
+        const deleteNameLabel = document.getElementById('delete-vm-name');
+        const cancelDeleteBtn = document.getElementById('cancel-delete');
+        const confirmDeleteBtn = document.getElementById('confirm-delete');
+        let deleteTargetId = null;
+
+        toggles.forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const targetView = toggle.dataset.view;
+
+                toggles.forEach(btn => btn.classList.toggle('active', btn === toggle));
+                panels.forEach(panel => panel.classList.toggle('active', panel.dataset.panel === targetView));
+                views.forEach(view => view.classList.toggle('active', view.id === targetView));
+            });
+        });
+
+        function openModal(modal) {
+            modal.classList.add('open');
+        }
+
+        function closeModal(modal) {
+            modal.classList.remove('open');
+        }
+
+        openCreateBtn.addEventListener('click', () => {
+            openModal(createModal);
+            document.getElementById('modal-vm-name').focus();
+        });
+
+        cancelCreateBtn.addEventListener('click', () => {
+            createForm.reset();
+            closeModal(createModal);
+        });
+
+        createModal.addEventListener('click', (e) => {
+            if (e.target === createModal) {
+                cancelCreateBtn.click();
+            }
+        });
+
+        cancelDeleteBtn.addEventListener('click', () => {
+            deleteTargetId = null;
+            closeModal(deleteModal);
+        });
+
+        confirmDeleteBtn.addEventListener('click', async () => {
+            if (!deleteTargetId) return;
+            try {
+                await fetch(`/delete_vm/${deleteTargetId}`, { method: 'POST' });
+                closeModal(deleteModal);
+                refreshServers();
+            } catch (err) {
+                console.error(err);
+            }
+        });
+
+        deleteModal.addEventListener('click', (e) => {
+            if (e.target === deleteModal) {
+                cancelDeleteBtn.click();
+            }
+        });
+
+        function bindActionButtons() {
+            document.querySelectorAll('[data-delete]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    deleteTargetId = btn.dataset.delete;
+                    deleteNameLabel.textContent = btn.dataset.name;
+                    openModal(deleteModal);
+                });
+            });
+
+            document.querySelectorAll('[data-power]').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const vmId = btn.dataset.id;
+                    const action = btn.dataset.power;
+                    btn.disabled = true;
+                    try {
+                        await fetch(`/instances/${vmId}/power`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: new URLSearchParams({ action })
+                        });
+                        refreshServers();
+                    } catch (err) {
+                        console.error(err);
+                    } finally {
+                        btn.disabled = false;
+                    }
+                });
+            });
+        }
+
+        function renderServers(servers) {
+            if (!servers.length) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="no-vm">No instances have been created yet</td></tr>';
+                return;
+            }
+            tableBody.innerHTML = servers.map(s => {
+                const statusClass = s.display_status.toLowerCase().replace(/\s+/g, '-');
+                const statusRaw = (s.status || '').toUpperCase();
+                const actions = [];
+
+                if (statusRaw === 'ACTIVE') {
+                    actions.push(`<button type="button" class="btn-action warning" data-power="stop" data-id="${s.id}" data-name="${s.name}">Shutdown</button>`);
+                } else if (statusRaw === 'SHUTOFF') {
+                    actions.push(`<button type="button" class="btn-action" data-power="start" data-id="${s.id}" data-name="${s.name}">Start</button>`);
+                } else {
+                    actions.push('<span class="no-action">—</span>');
+                }
+
+                actions.push(`<button type="button" class="btn-delete" data-delete="${s.id}" data-name="${s.name}">Delete</button>`);
+
+                return `
+                    <tr>
+                        <td>${s.name}</td>
+                        <td><span class="status ${statusClass}">${s.display_status}</span></td>
+                        <td>${s.fixed_ip || 'N/A'}</td>
+                        <td>${s.floating_ip || 'N/A'}</td>
+                        <td class="actions-cell">${actions.join('')}</td>
+                    </tr>
+                `;
+            }).join('');
+            bindActionButtons();
+        }
+
+        async function refreshServers() {
+            try {
+                const res = await fetch('/api/servers');
+                const data = await res.json();
+                renderServers(data);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        refreshServers();
+
+        const source = new EventSource('/events');
+        source.onmessage = () => refreshServers();
+    </script>
+</body>
+</html>

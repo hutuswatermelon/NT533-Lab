@@ -1,0 +1,483 @@
+body {
+    margin: 0;
+    font-family: "Ubuntu", sans-serif;
+    background-color: #f4f5f7;
+    color: #333;
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+    width: 260px;
+    background-color: #272a33;
+    color: #eee;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.sidebar .logo {
+    padding: 20px;
+    text-align: center;
+    background-color: #20232b;
+    font-weight: bold;
+    border-bottom: 1px solid #333;
+}
+
+.nav-section {
+    border-bottom: 1px solid #333;
+}
+
+.nav-toggle {
+    width: 100%;
+    padding: 14px 20px;
+    background: none;
+    color: #fff;
+    border: none;
+    text-align: left;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.nav-toggle:hover,
+.nav-toggle.active {
+    background-color: #3498db;
+}
+
+.nav-panel {
+    display: none;
+    flex-direction: column;
+}
+
+.nav-panel.active {
+    display: flex;
+}
+
+.panel-group {
+    padding: 15px 20px;
+}
+
+.panel-group + .panel-group {
+    border-top: 1px solid #333;
+}
+
+.panel-group h3 {
+    color: #ddd;
+    font-size: 15px;
+    margin: 0 0 10px;
+    border-left: 3px solid #3498db;
+    padding-left: 8px;
+}
+
+.btn-sidebar {
+    display: block;
+    background-color: #3498db;
+    color: white;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    margin: 6px 0;
+    text-align: center;
+    font-size: 14px;
+    transition: background 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.btn-sidebar:hover {
+    background-color: #2980b9;
+}
+
+.btn-sidebar.blue {
+    background-color: #0078d7;
+}
+
+.vm-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.vm-form label {
+    color: #ccc;
+    font-size: 13px;
+}
+
+.vm-form input {
+    padding: 8px;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+    font-size: 14px;
+}
+
+.vm-form textarea {
+    resize: vertical;
+    min-height: 150px;
+    padding: 8px;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+    font-family: "Ubuntu", sans-serif;
+    font-size: 13px;
+    background-color: #1f2129;
+    color: #f5f5f5;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+    margin-left: 260px;
+    padding: 30px 40px;
+    width: calc(100% - 260px);
+}
+
+header h1 {
+    font-size: 24px;
+    margin-bottom: 6px;
+    color: #2c3e50;
+}
+
+header p {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.content-view {
+    display: none;
+}
+
+.content-view.active {
+    display: block;
+}
+
+/* ===== TABLE ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.instances-table {
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.instances-table thead {
+    background: #eef2f7;
+}
+
+.instances-table th {
+    padding: 14px 12px;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    color: #5d6d7e;
+    text-align: center;
+}
+
+.instances-table td {
+    padding: 16px 12px;
+    border-top: 1px solid #e5e9f2;
+    text-align: center;
+    color: #34495e;
+}
+
+.instances-table tbody tr:hover {
+    background: #f8fbff;
+}
+
+.instances-table td:first-child {
+    text-align: left;
+}
+
+th:last-child,
+td.actions-cell {
+    width: 170px;
+}
+
+.actions-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.actions-cell .btn-action,
+.actions-cell .btn-delete {
+    width: fill;
+    justify-content: center;
+}
+
+.members-table th,
+.members-table td {
+    text-align: left;
+}
+
+.no-vm {
+    text-align: center;
+    color: #777;
+    padding: 15px;
+}
+
+.no-action {
+    display: inline-block;
+    min-width: 140px;
+    text-align: center;
+    color: #888;
+    font-size: 13px;
+}
+
+/* ===== BUTTONS ===== */
+.btn-delete {
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e74c3c;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.btn-delete:hover {
+    background-color: #c0392b;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-action {
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-family: "Ubuntu", sans-serif;
+    transition: background 0.2s;
+    color: #fff;
+}
+
+.btn-primary {
+    background-color: #3498db;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+}
+
+.btn-secondary {
+    background-color: #7f8c8d;
+}
+
+.btn-secondary:hover {
+    background-color: #707b7c;
+}
+
+.btn-action {
+    background-color: #2ecc71;
+    margin-right: 6px;
+    min-width: 110px;
+    text-align: center;
+}
+
+.btn-action:hover {
+    background-color: #27ae60;
+}
+
+.btn-action.warning {
+    background-color: #f39c12;
+}
+
+.btn-action.warning:hover {
+    background-color: #d68910;
+}
+
+.actions-cell {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+}
+
+.actions-cell .btn-action,
+.delete-cell .btn-delete {
+    flex-shrink: 0;
+}
+
+.delete-cell {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* ===== STATUS TAGS ===== */
+.status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+.status.active {
+    background-color: #27ae60;
+    color: white;
+}
+.status.shutoff {
+    background-color: #e74c3c;
+    color: white;
+
+}
+
+.status.running,
+.status.online,
+.status.up {
+    background-color: #27ae60;
+    color: white;
+}
+
+.status.error,
+.status.down {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.status.build,
+.status.pending {
+    background-color: #f39c12;
+    color: white;
+}
+
+/* ===== NETWORK VIEW ===== */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.card h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+
+.card h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #34495e;
+}
+
+.meta-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.meta-list li {
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.meta-list span {
+    display: inline-block;
+    min-width: 140px;
+    color: #555;
+    font-weight: 500;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+    .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+    }
+
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px;
+    }
+}
+
+/* ===== MODAL ===== */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1000;
+}
+
+.modal.open {
+    display: flex;
+}
+
+.modal-content {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    width: min(640px, 90vw);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 14px;
+    color: #2c3e50;
+}
+
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal-content label {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.modal-content input,
+.modal-content textarea {
+    width: 100%;
+    border: 1px solid #ccd1d9;
+    border-radius: 6px;
+    padding: 10px;
+    font-family: "Ubuntu", sans-serif;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.modal-small {
+    width: min(400px, 90vw);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
