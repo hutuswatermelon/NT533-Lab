@@ -31,7 +31,10 @@
                     <h3>Network</h3>
                     <a href="/init" class="btn-sidebar">Initialize Network</a>
                 </div>
-                <!-- Load Balancer section tạm thời vô hiệu hóa -->
+                <div class="panel-group">
+                    <h3>Load Balancer</h3>
+                    <a href="/init_lb" class="btn-sidebar">Initialize Load Balancer</a>
+                </div>
             </div>
         </div>
     </aside>
@@ -92,7 +95,47 @@
                 </div>
                 <div class="card">
                     <h2>Load Balancer</h2>
-                    <p>The load balancer feature is under maintenance.</p>
+                    <ul class="meta-list">
+                        <li><span>Load Balancer:</span> {{ lb_details.name if lb_details else 'Not created' }}</li>
+                        <li><span>VIP Address:</span> {{ lb_details.vip_address if lb_details else 'N/A' }}</li>
+                        <li><span>Floating IP:</span> {{ lb_details.floating_ip if lb_details and lb_details.floating_ip else 'N/A' }}</li>
+                        <li><span>Listener Port:</span> {{ lb_details.listener_port if lb_details else 'Not created' }}</li>
+                        <li><span>Pool Algorithm:</span> {{ lb_details.pool_algorithm if lb_details else 'Not created' }}</li>
+                        <li><span>Operating Status:</span> {{ lb_details.operating_status if lb_details else 'N/A' }}</li>
+                        <li><span>Provisioning Status:</span> {{ lb_details.provisioning_status if lb_details else 'N/A' }}</li>
+                        <li><span>Admin State Up:</span> {{ 'Yes' if lb_details and lb_details.admin_state_up else 'No' }}</li>
+                    </ul>
+                    {% if lb_details and lb_details.members %}
+                    <h3>Members</h3>
+                    <table class="members-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: center;">Address</th>
+                                <th style="text-align: center;">Port</th>
+                                <th style="text-align: center;">Weight</th>
+                                <th style="text-align: center;">Backup</th>
+                                <th style="text-align: center;">Operating Status</th>
+                                <th style="text-align: center;">Provisioning Status</th>
+                                <th style="text-align: center;">Admin State Up</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in lb_details.members %}
+                            <tr>
+                                <td style="text-align: center;">{{ m.address }}</td>
+                                <td style="text-align: center;">{{ m.protocol_port }}</td>
+                                <td style="text-align: center;">{{ m.weight if m.weight is not none else 'N/A' }}</td>
+                                <td style="text-align: center;">{{ 'Yes' if m.backup else 'No' }}</td>
+                                <td style="text-align: center;"><span class="status {{ m.operating_status|lower }}">{{ m.operating_status }}</span></td>
+                                <td style="text-align: center;">{{ m.provisioning_status or 'N/A' }}</td>
+                                <td style="text-align: center;">{{ 'Yes' if m.admin_state_up else 'No' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No members registered.</p>
+                    {% endif %}
                 </div>
             </div>
         </section>

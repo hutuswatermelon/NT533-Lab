@@ -1,2 +1,4 @@
 flask
 openstacksdk
+python-openstackclient
+requests
