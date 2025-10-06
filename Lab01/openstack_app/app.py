@@ -68,7 +68,7 @@ print(f"Username: {username}")
 password = getpass.getpass("Enter your OpenStack password: ")
 conn = openstack.connect(cloud='openstack', password=password)
 
-# --- Event Queue for SSE ---
+# --- Event Queue for SSE (Server-Sent Events) ---
 subscriptions = set()
 event_queue = queue.Queue()
 
@@ -105,7 +105,6 @@ def get_floating_ip(server):
 def readable_status(server):
         """Convert status to readable format"""
         return STATUS_LABEL.get(server.status, server.status)
-
 
 def summarize_server(server):
         """Summarize server information"""
@@ -290,7 +289,7 @@ def create_vm(name, user_data_script=None):
 
 
 # ============================================================================
-# LOAD BALANCER FUNCTIONS (Currently disabled)
+# LOAD BALANCER FUNCTIONS
 # ============================================================================
 
 def get_lb_resources():
